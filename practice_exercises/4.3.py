@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     # setting inputs
     x0 = 1
-    x1 = 0
+    x1 = 1
 
     # adder network
     n0 = Neuron(inputs=[(x0, -0.5), (x1, -0.5)], thresh_value=-0.5)
@@ -29,5 +29,7 @@ if __name__ == '__main__':
     n3_carry = Neuron(inputs=[(n0, -0.5)], thresh_value=0)
     n4_sum = Neuron(inputs=[(n1, -0.5), (n2, -0.5)], thresh_value=-0.5)
 
-    print(f"With x0 = {x0} and x1 = {x1}\n"
-          f"carry = {n3_carry.calc_output()} and sum = {n4_sum.calc_output()}")
+    # pretty printing the adder
+    print(f"{bin(x0)}\n".rjust(6, " "),
+          f"{bin(x1)}+\n".rjust(6, " "),
+          f"{bin(n3_carry.calc_output()<<1+n4_sum.calc_output())}".rjust(4, " "))
