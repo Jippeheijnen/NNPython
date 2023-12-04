@@ -21,7 +21,6 @@ if __name__ == '__main__':
     # setting inputs
     x0 = 1
     x1 = 1
-
     # adder network
     n0 = Neuron(inputs=[(x0, -0.5), (x1, -0.5)], thresh_value=-0.5)
     n1 = Neuron(inputs=[(x0, -0.5), (n0, -0.5)], thresh_value=-0.5)
@@ -30,6 +29,7 @@ if __name__ == '__main__':
     n4_sum = Neuron(inputs=[(n1, -0.5), (n2, -0.5)], thresh_value=-0.5)
 
     # pretty printing the adder
-    print(f"{bin(x0)}\n".rjust(6, " "),
-          f"{bin(x1)}+\n".rjust(6, " "),
-          f"{bin(n3_carry.calc_output()<<1+n4_sum.calc_output())}".rjust(4, " "))
+    print(f"x0 {bin(x0)}\n".rjust(9, " "),
+          f"x1 {bin(x1)}+\n".rjust(9, " "),
+          f"-------\n",
+          f"0b{n3_carry.calc_output() if n3_carry.calc_output() == 1 else ''}{n4_sum.calc_output()}".rjust(7, " "))
