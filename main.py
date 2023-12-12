@@ -19,6 +19,8 @@ import random
 from math import inf
 from typing import List, Union, Tuple
 
+from matplotlib import pyplot as plt
+
 from pandas import DataFrame
 from ucimlrepo import fetch_ucirepo
 
@@ -98,7 +100,11 @@ def sgd(training_data: List[List[Union[float, int]]],
     network: NeuralNet = NeuralNet(train_set=training_data, network_shape=network_shape,
                                    learning_rate=lr)
 
+    scores: List[float] = []
+
     for _ in range(epochs):
+
+
         for __, row in enumerate(training_data):
             data: List[float] = row[:-1]
             data_class: int = row[-1]
@@ -106,9 +112,20 @@ def sgd(training_data: List[List[Union[float, int]]],
             network.forward_propagate(data_class)
             network.back_propagate()
         score, correct_answers = validate_network(network, validation_data)
-        print(f"Epoch #{_}, "
-              f"Guesses correct:{correct_answers}/{len(validation_data)} - score:{score} - lr: {network.learning_rate}")
+        scores.append(score)
         network.learning_rate *= learning_rate_factor  # making the adjustments smaller as epochs go on.
+
+        # showing a percentage bar :)
+        percentage = round(_ / (epochs - 1) * 100, 2)
+        print(f"Epoch #{_}, Guesses correct:{correct_answers}/{len(validation_data)} - score:{score} - lr: {network.learning_rate}", end='\n')
+        print(f"Progress: [{'=' * int(percentage // 10)}{'>' if percentage < 100 else ''}{'.' * int(10 - (((percentage) // 10)) - 1)}]  {percentage}%", end='\r')
+
+
+    # Plot scores per epoch
+    plt.plot(range(len(scores)), scores, linewidth=1, color='blue',
+             label='Score % correct guesses per Epoch')
+    plt.legend()
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -135,13 +152,14 @@ if __name__ == '__main__':
     # randomize the data before converting, easier this way
     random.shuffle(dataset)
 
+    # normalize the dataset
     minval, maxval = find_high_low_values(dataset)
     dataset = normalize(dataset, minval, maxval)
 
-    split = int(len(dataset) * .85)
+    split = int(len(dataset) * .8)
     train_set: List[List[float]] = dataset[:split]
     validate_set: List[List[float]] = dataset[split:]
 
     # network_shape = n neurons per layer, n layers, n outputs
-    sgd(training_data=train_set, validation_data=validate_set, network_shape=(4, 1, 3), epochs=2000, lr=.05,
-        learning_rate_factor=0.99995)
+    sgd(training_data=train_set, validation_data=validate_set, network_shape=(3, 3, 3), epochs=1000, lr=.0009,
+        learning_rate_factor=.9999)
