@@ -32,4 +32,4 @@ if __name__ == '__main__':
     print(f"x0 {bin(x0)}\n".rjust(9, " "),
           f"x1 {bin(x1)}+\n".rjust(9, " "),
           f"-------\n",
-          f"0b{n3_carry.calc_activation() if n3_carry.calc_activation() == 1 else ''}{n4_sum.calc_activation()}".rjust(7, " "))
+          f"0b{n3_carry.calculate_output() if n3_carry.calculate_output() == 1 else ''}{n4_sum.calculate_output()}".rjust(7, " "))

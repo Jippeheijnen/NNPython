@@ -16,7 +16,7 @@
 #
 from itertools import chain
 import random
-from typing import List, Union
+from typing import List, Union, Tuple
 
 from pandas import DataFrame
 from ucimlrepo import fetch_ucirepo
@@ -25,7 +25,6 @@ from Network import NeuralNet, convert
 
 
 def validate_network(network: NeuralNet, validation_data: List[List[Union[float, int]]]):
-    sum_of_neuron = 0
     correct_answers = 0
     for row in validation_data:
 
@@ -38,10 +37,6 @@ def validate_network(network: NeuralNet, validation_data: List[List[Union[float,
         desired_output = convert(data_class)
         actual_output = network.generate_output()
 
-        y__a = [y_i - a_i for y_i, a_i in zip(desired_output, actual_output)]  # subtract arrays
-        squared = [x ** 2 for x in y__a]  # square the array
-        sum_of_neuron += sum(squared)
-
         if actual_output.index(max(actual_output)) == desired_output.index(1):
             correct_answers += 1
 
@@ -51,30 +46,64 @@ def validate_network(network: NeuralNet, validation_data: List[List[Union[float,
 
 def sgd(training_data: List[List[Union[float, int]]],
         validation_data: List[List[float]],
-        epochs=10,
-        mini_batch_size=5,
-        lr=0.1):
+        network_shape: Tuple[int, int, int],
+        epochs,
+        lr):
     """
-    This is the gradient decent function, it trains the neural network.
+    This is the stochastic gradient decent function, it trains the neural network.
     :param training_data: the whole training_dataset
     :param validation_data:
+    :param network_shape:
     :param epochs: amount of times the network is trained.
-    :param mini_batch_size: to make the training faster, the training_data is split in mini batches.
     :param lr: the learning rate.
     :return:
     """
 
-    network: NeuralNet = NeuralNet(training_data, validation_data)
+    network: NeuralNet = NeuralNet(train_set=training_data, validation_set=validation_data, network_shape=network_shape,
+                                   learning_rate=lr)
 
     for _ in range(epochs):
-        random.shuffle(training_data)
+        # random.shuffle(training_data)
         for __, row in enumerate(training_data):
             data: List[float] = row[:-1]
             data_class: int = row[-1]
             [network.input_layer[i].put(value) for i, value in enumerate(data)]
             network.forward_propagate(data_class)
             network.back_propagate()
-        validate_network(network, validation_data)
+        score, correct_answers = validate_network(network, validation_data)
+        network.learning_rate *= 0.995
+        print(score)
+
+def MBGD(training_data: List[List[Union[float, int]]],
+        validation_data: List[List[float]],
+        network_shape: Tuple[int, int, int],
+        batch_size: int,
+        epochs: int,
+        lr: float):
+    """
+    Mini batch gradient descent, slower than SGD, but more accurate.
+    @param training_data:
+    @param validation_data:
+    @param network_shape:
+    @param batch_size:
+    @param epochs:
+    @param lr:
+    @return:
+    """
+    network: NeuralNet = NeuralNet(train_set=training_data, validation_set=validation_data, network_shape=network_shape,
+                                   learning_rate=lr)
+
+    for _ in range(epochs):
+        # random.shuffle(training_data)
+        for __, row in enumerate(training_data):
+            data: List[float] = row[:-1]
+            data_class: int = row[-1]
+            [network.input_layer[i].put(value) for i, value in enumerate(data)]
+            network.forward_propagate(data_class)
+            network.back_propagate()
+        score, correct_answers = validate_network(network, validation_data)
+        network.learning_rate *= 0.995
+        print(score)
 
 
 if __name__ == '__main__':
@@ -103,5 +132,5 @@ if __name__ == '__main__':
     split = int(len(dataset) * .8)
     train_set: List[List[float]] = dataset[:split]
     validate_set: List[List[float]] = dataset[split:]
-
-    sgd(training_data=train_set, validation_data=validate_set)
+    # network_shape = n neurons per layer, n layers, n outputs
+    sgd(training_data=train_set, validation_data=validate_set, network_shape=(4, 5, 3), epochs=1000, lr=0.5)
